@@ -1,6 +1,6 @@
 {
   "name": "eleventy-img-helper",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Eleventy plugin to convert <img> tags in generated HTML to responsive image markup based on CSS selectors, using the eleventy-img utility.",
   "main": ".eleventy.js",
   "scripts": {
@@ -32,6 +32,7 @@
     "@11ty/eleventy": "^1.0.1",
     "@11ty/eleventy-img": "^2.0.0",
     "deepmerge": "^4.2.2",
-    "linkedom": "^0.14.7"
+    "linkedom": "^0.14.9",
+    "specificity": "^0.4.1"
   }
 }

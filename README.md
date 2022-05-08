@@ -9,11 +9,12 @@ output, regardless of the template language used. It takes the same options as `
   - `attributes`: The attributes that were on the original `<img>` tag.
 - `postFunction`: A function to run on the processed HTML before returning it. This is most useful for things like HTML
   minification or other small transforms.
-- `selectors`: Probably the highlight feature of this plugin, this option is an object containing a list of CSS
-  selectors paired with another set of options. These selector-specific options will be merged with the global ones,
-  overriding any that already existed. Any options can be used in either a global or selector-specific context, but only
-  1 selector should apply to each image in the document currently. Additionally, `postFunction` will have no effect when
-  in selector-specific options.
+- `selectors`: The highlight feature of this plugin, this option is an object containing a list of CSS selectors paired
+  with another set of `eleventy-img`/plugin options. For each `<img>` tag in the input content, the selectors that apply
+  to it will have their options merged with the global options and then each other in order of CSS specificity.
+  - In other words, the selector-specific options will emulate the CSS cascade in a very basic form, with the global
+    options having the least specificity.
+  - Note: `postFunction` will have no effect when in selector-specific options.
 
 ## Installation
 ```
