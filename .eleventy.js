@@ -1,17 +1,9 @@
-const respImgTransform = require("./transform");
+const transform = require("./lib/transform");
 
-const defaultOptions = {
-  selectors: {
-    "img": {}
-  },
-  postFunction: null,
-  htmlFunction: null
-}
-
-module.exports = (eleventyConfig, options = defaultOptions) => {
+module.exports = (eleventyConfig, options) => {
   eleventyConfig.addTransform("responsive-images", async function (inputContent) {
     if (this.outputPath && this.outputPath.endsWith(".html")) {
-      let processed = respImgTransform(inputContent, options, this.inputPath, this.outputPath);
+      let processed = transform(inputContent, options, this.inputPath, this.outputPath);
       if (options.postFunction && typeof options.postFunction === "function")
         return processed.then(value => options.postFunction(value));
       else return processed;

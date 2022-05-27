@@ -2,6 +2,7 @@
 `eleventy-img-helper` is an [Eleventy](https://11ty.dev) plugin that makes use of the 
 [`eleventy-img`](https://www.11ty.dev/docs/plugins/image/) utility to generate responsive images in Eleventy HTML
 output, regardless of the template language used. It takes the same options as `eleventy-img`, but with a few extras:
+- `sizes`: Directly specify the source size descriptors to be put in the `sizes` attribute in the resulting HTML.
 - `htmlFunction`: Is `eleventy-img`'s `generateHTML` function not versatile enough for you? Pass in a custom function to
   generate the HTML exactly the way you want. The following pieces of data will be provided:
   - `metadata`: The result of invoking `eleventy-img` on an image, containing the metadata describing the new images.
@@ -34,19 +35,23 @@ module.exports = function (eleventyConfig) {
 }
 ```
 
-## A complex configuration example
+## A complex configuration example (with a few notes)
 ```js
 const imgOptConfig = {
   formats: ["avif", "webp", "jpeg"],
+  hashLength: 4,
   filenameFormat: (id, src, width, format) => {
-    let filename = path.basename(src, path.extname(src));
-    return `${filename}-${width}.${format}`
+    let filename = path.basename(src, path.extname(src)).split("-")[0];
+    return `${filename}-${id}-${width}.${format}`
+  },
+  sharpAvifOptions: { //supports all of the options in eleventy-img, even the niche ones
+    quality: 75
   },
   selectors: {
-    "img.headerImg": {
-      widths: [720, 1440, 2560],
+    ".headerImg": { //use any selector, as long as it matches <img> tags (doesn't have to explicitly specify them)
+      widths: [720, 1440, 2160],
       sizes: "100vw",
-      htmlFunction: (metadata, options, attributes) => {
+      htmlFunction: (metadata, options, attributes) => { //custom HTML tag generation
         let newImgAttrs = {
           src: metadata.jpeg[0].url,
           loading: "lazy",
@@ -64,11 +69,18 @@ const imgOptConfig = {
       }
     },
     "article img": {
-      widths: [448, 672, 872],
-      sizes: "(min-width: 896px) 872px, 100vw"
+      widths: [720, 1080],
+      sizes: "(min-width: 744px) 720px, 100vw"
+    },
+    "img[data-nl]": {
+      formats: ["webp", "png"], //overriding global format option above
+      sharpWebpOptions: {
+        nearLossless: true,
+        quality: 50
+      },
     }
   },
-  postFunction: (inputContent) => {
+  postFunction: (inputContent) => { //optional post function, HTML minification in this case
     if (process.env.NODE_ENV === "prod") {
       return htmlmin.minify(inputContent, {
         useShortDoctype: true,
@@ -78,5 +90,5 @@ const imgOptConfig = {
     }
     return inputContent;
   }
-}
+};
 ```

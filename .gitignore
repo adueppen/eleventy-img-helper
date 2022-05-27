@@ -119,3 +119,6 @@ dist
 .idea
 *.iml
 gen
+
+# tsc output
+lib
