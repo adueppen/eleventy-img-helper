@@ -65,8 +65,8 @@ let EleventyImgHelper = async function (
     const isRemote = eleventyImg.Util.isRemoteUrl(image.src);
     const pageOutputDir = path.dirname(outputPath)
     const imagePath = isRemote ? image.src : path.resolve(path.dirname(inputPath), image.src);
-    const outputDir = isRemote ? pageOutputDir : path.dirname(path.resolve(pageOutputDir, image.src));
-    const urlPath = path.relative(path.dirname(outputPath), outputDir);
+    const outputDir = currentOptions.outputDir ?? (isRemote ? pageOutputDir : path.dirname(path.resolve(pageOutputDir, image.src)));
+    const urlPath = currentOptions.urlPath ?? path.relative(path.dirname(outputPath), outputDir);
     const imageAttrs = Object.fromEntries(image.getAttributeNames().map((a: string) => [a, image.getAttribute(a)])) as ImageAttrs;
     const newImageMetadata = await eleventyImg(imagePath, {...currentOptions, outputDir, urlPath});
     const newImageTag = (currentOptions.htmlFunction && typeof currentOptions.htmlFunction === "function") ?
