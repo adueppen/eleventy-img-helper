@@ -1,60 +1,58 @@
-import {parseHTML} from "linkedom";
-import {compare} from "specificity";
 import deepmerge from "deepmerge";
 import eleventyImg, {BaseImageOptions, Metadata} from "@11ty/eleventy-img";
 import * as path from "path";
-import generateHTML from "@11ty/eleventy-img/generate-html";
-const mergeFunction: deepmerge.Options["arrayMerge"] = (target, source) => source; //TODO: possibly offer a way to override this?
 
-type ImageAttrs = Parameters<typeof generateHTML>[1]
-type HtmlFunction = (metadata: Metadata, options: EleventyImgHelper.HelperOptions, attributes: ImageAttrs) => string;
+const mergeFunction: deepmerge.Options["arrayMerge"] = (_target, source) => source; //TODO: possibly offer a way to override this?
 
-declare namespace EleventyImgHelper {
-  interface BaseHelperOptions extends BaseImageOptions {
-    /**
-     * Is `eleventy-img`'s `generateHTML` function not versatile enough for you? Pass in a custom function to
-     * generate the HTML exactly the way you want.
-     * @param metadata the Stats object from calling Image
-     * @param options the set of options applied to this image
-     * @param attributes the attributes on the original image tag
-     * @return a HTML string for this image
-     */
-    htmlFunction?: HtmlFunction;
+type ImageAttrs = Parameters<typeof eleventyImg.generateHTML>[1]
+type HtmlFunction = (metadata: Metadata, options: HelperOptions, attributes: ImageAttrs) => string;
 
-    /**
-     * Directly specify the source size descriptors to be put in the `sizes` attribute in the resulting HTML.
-     */
-    sizes?: string;
-  }
+export interface BaseHelperOptions extends BaseImageOptions {
+  /**
+   * Is `eleventy-img`'s `generateHTML` function not versatile enough for you? Pass in a custom function to
+   * generate the HTML exactly the way you want.
+   * @param metadata the Stats object from calling Image
+   * @param options the set of options applied to this image
+   * @param attributes the attributes on the original image tag
+   * @return a HTML string for this image
+   */
+  htmlFunction?: HtmlFunction;
 
-  interface HelperOptions extends BaseHelperOptions {
-    /**
-     * A function to run on the processed HTML before returning it. This is most useful for things like HTML
-     * minification or other small transforms.
-     * @param inputContent the HTML string that would normally be returned by the transform
-     * @return a further transformed HTML string
-     */
-    postFunction?: (inputContent: string) => string;
-
-    /**
-     * The highlight feature of this plugin, this option is an object containing a list of CSS selectors paired with
-     * another set of `eleventy-img`/plugin options. For each image tag in the input content, the selectors that
-     * apply to it will have their options merged with the global options and then each other in order of CSS
-     * specificity.
-     */
-    selectors?: {[selector: string]: BaseHelperOptions};
-  }
+  /**
+   * Directly specify the source size descriptors to be put in the `sizes` attribute in the resulting HTML.
+   */
+  sizes?: string;
 }
 
-let EleventyImgHelper = async function (
+export interface HelperOptions extends BaseHelperOptions {
+  /**
+   * A function to run on the processed HTML before returning it. This is most useful for things like HTML
+   * minification or other small transforms.
+   * @param inputContent the HTML string that would normally be returned by the transform
+   * @return a further transformed HTML string
+   */
+  postFunction?: (inputContent: string) => string;
+
+  /**
+   * The highlight feature of this plugin, this option is an object containing a list of CSS selectors paired with
+   * another set of `eleventy-img`/plugin options. For each image tag in the input content, the selectors that
+   * apply to it will have their options merged with the global options and then each other in order of CSS
+   * specificity.
+   */
+  selectors?: {[selector: string]: BaseHelperOptions};
+}
+
+export default async function (
   inputContent: string,
-  options: EleventyImgHelper.HelperOptions,
+  options: HelperOptions,
   inputPath: string,
   outputPath: string
 ): Promise<string> {
+  const {parseHTML} = await import("linkedom");
+  const {compare} = await import("specificity");
   let {document} = parseHTML(inputContent);
   for (const image of [...document.querySelectorAll("img")]) {
-    let currentOptions: EleventyImgHelper.HelperOptions;
+    let currentOptions: HelperOptions;
     if (options.selectors) {
       const orderedOptions = Object.entries(options.selectors)
         .filter(([selector]) => image.matches(selector))
@@ -81,5 +79,3 @@ let EleventyImgHelper = async function (
   }
   return document.toString();
 }
-
-export = EleventyImgHelper;
